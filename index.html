@@ -1,0 +1,238 @@
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script>
+	var socket = io.connect('http://localhost:9000');
+
+//------------------------Socket emit functions---------------------
+//---------------------------ON CONNECTION----------------------
+	socket.on('connect', function(){
+		socket.emit('adduser', prompt("What's your name?"));
+
+
+	});
+
+//----------------------------UPDATING CHAT BOX------------------
+
+	socket.on('updatechat', function (username, data) {
+		$('#conversation').append('<b>'+username + ':</b> ' + data + '<br>');
+	});
+
+	socket.on('show', function (username) {
+		$('#who').val(username);
+	});
+
+
+	socket.on('updateusers', function(data) {
+
+        $('#users').empty();
+        $.each(data, function(key) {
+            
+            $('#users').append('<div><a href = "#" onclick="alertuser(\''+key+'\')">' + key + '</a></div>');
+        });
+    });
+
+//----------------------------PRIVATE MSG -------------------------------
+	socket.on('new_msg',function (username,data,sender_name){
+		console.log('its working...');
+
+		document.getElementById('test').style.display = 'block';
+		$('#pri_name').val(username);
+		$('#test').append('<b>'+sender_name + ':</b> ' + data + '<br>');
+		
+
+	});
+	
+//---------------------------ROOM CHAT UPDATE----------------------------------------------
+	socket.on('update_crtrooms', function(data) {
+
+        $('#rooms').empty();
+        $.each(data, function(key) {
+            
+            $('#rooms').append('<div><a href = "#" onclick="switchRoom(\''+key+'\')">' + key + '</a></div>');
+        });
+    });
+
+
+
+//########################---FUNCTIONS---#########################
+//
+
+	function switchRoom(room){
+
+		
+		socket.emit('switchRoom', room);
+	}
+
+
+	function alertuser(username){
+
+		document.getElementById('test').style.display = 'block';
+		$('#pri_name').val(username);
+	}
+
+	function closePopup() {
+
+    	document.getElementById('test').style.display = 'none';
+	}
+
+//#########################--ON LOAD OF PAGE----------ON CLICK FUNCTIONS----##############
+
+	$(function(){
+		
+		$('#datasend').click( function() {
+			var message = $('#data').val();
+			$('#data').val('');
+			socket.emit('sendchat', message);
+		});
+
+		$('#data').keypress(function(e) {
+			if(e.which == 13) {
+				$(this).blur();
+				$('#datasend').focus().click();
+			}
+		});
+
+		$('#pri_send').click( function() {
+			var pri_msg = $('#msg').val();
+
+			$('#msg').val('');
+			var username = $('#pri_name').val();
+			//$('#test').append('<b>'+username + ':</b> ' + pri_msg + '<br>');
+			socket.emit('send_pri_msg',username, pri_msg);
+		});
+
+		$('#msg').keypress(function(e) {
+			if(e.which == 13) {
+				$(this).blur();
+				$('#pri_send').focus().click();
+			}
+		});
+
+		$('#createRoom').click( function() {
+			var roomName = $('#roomName').val();
+			$('#roomName').val('');
+			//var username = $('#pri_name').val();
+			var name1 = $('#Name1').val();
+			$('#Name1').val('');
+			var name2 = $('#Name2').val();
+			$('#Name2').val('');
+			socket.emit('createRoom',roomName,name1,name2)	;
+			console.log("till here it is working.");
+		});
+
+		// $('#roombutton').click(function(){
+			
+  //       	var name = $('#roomname').val();
+  //       	var msg = $('#msg').val(); 
+  //       	$('#msg').val('');
+  //       	socket.emit('private_chat', name,msg);
+  //   	});
+
+
+	});
+
+
+
+//----------------------------------html code...-------------------
+</script>
+<style type="text/css">
+.popup{
+    position:absolute;
+    top:100px;
+    left:1000px;
+    margin:100px auto;
+    width:250px;
+    height:300px;
+    font-family:verdana;
+    font-size:13px;
+    padding:10px;
+    background-color:rgb(240,240,240);
+    border:2px solid grey;
+    z-index:100000000000000000; 
+    display:none
+    }
+    
+.cancel{
+    position: relative;
+    left: 240;
+    top: -88;
+    background-color: red;
+    height:14px;
+    width:20px;
+    padding:0 0 5px 0;
+    border-radius:3px;
+    }
+.msg_box{
+	position: relative;
+	left: -11px;
+	top: 274px;
+	overflow: hidden;
+	border:2px solid grey;
+
+}
+
+.p_name{
+	position: relative;
+	left: -11px;
+	top: -47px;
+	width: 245px;
+}
+
+.pri_button{
+	position: relative;
+	left: 211;
+	top: 226;
+
+}
+
+
+.cancel:hover{
+    background:rgb(255,50,50);
+    }
+</style>
+
+<div style="border: 5px solid green;height:500px;width:100px;position:absolute;left:10px;top:20px;" >Rooms
+            <div id = "rooms">
+
+            </div>
+ </div>
+
+<div style="border: 5px solid blue;height:500px;width:150px;position:absolute;left:600px;top:20px;" >participants
+            <div id = "users">
+
+            </div>
+ </div>
+
+
+<div style="border: 5px solid red;height:300px;width:400px;position:absolute;left:150px;top:20px;overflow-y: scroll;">
+	<div id="conversation"></div>
+	
+</div>
+
+<textarea rows= "2" cols="40" style = "position:absolute;left: 150px;top:335px;border: 5px solid yellow;" id="data"></textarea>
+
+<div style = "position:absolute;left: 500px;top:340px">
+	
+	<input type="button" id="datasend" value="Send" />
+</div>
+
+<div style = "position:absolute;left: 150px;top:400px">
+	
+	 <input style = "border: 5px solid yellow;width:300px" id ="roomName" type="text" name = "Room Name" value="Room Name">
+	 <input type="button" id="createRoom" value="Create" /> <br><br>
+	 <input style="border: 5px solid pink;width:300px" id ="Name1" type="text" name = "Room Name" value="Name1"><br><br>
+	 <input style="border: 5px solid pink;width:300px" id ="Name2" type="text" name = "Room Name" value="Name2">
+</div>
+
+
+
+<div id="test" class="popup">
+	
+    <textarea rows="2" cols = "25" class = "msg_box"  id = "msg" type="text" name="write here"></textarea>
+    <input style="color:red" class = "p_name" id ="pri_name" type="text" name = "pri_name">
+    <input class = "pri_button" type="button" id="pri_send" value="Send" />
+    <div class="cancel" onclick="closePopup();"></div>
+</div>
+
+<input style="font-size:50px;color: red;border: 5px solid black;height:100px;width:300px;position:absolute;left:900;top:60" id ="who" type="text" name = "Room Name" >
+

@@ -1,0 +1,27 @@
+{
+<<<<<<< HEAD
+  "name": "socket.io-chat",
+  "version": "0.0.0",
+  "description": "A simple chat client using socket.io",
+  "main": "index.js",
+  "author": "Grant Timmerman",
+  "private": true,
+  "license": "BSD",
+  "dependencies": {
+    "express": "3.4.8",
+    "socket.io": "latest"
+  }
+=======
+    "name": "RealTimeWebChat",
+    "version": "0.0.1",
+    "description": "Real time web chat",
+    "dependencies": {
+        "socket.io": "latest",
+        "express": "latest",
+        "jade": "latest",
+	"redis.io": "latest"
+	
+    },
+    "author": "developer"
+>>>>>>> c317c2f56d45db563edee36fb0ac6a7b663bf5fb
+}
